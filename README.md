@@ -1,2 +1,0 @@
-# RxSwift_Share
-RxSwiftのshareオペレータの基本動作確認
