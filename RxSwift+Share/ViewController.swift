@@ -48,7 +48,7 @@ final class ViewController: UIViewController {
             print("🐶 random: \(random)")
             return random
         }
-//        .share()
+        .share()
     }
     
     private func setupSubscribe() {
