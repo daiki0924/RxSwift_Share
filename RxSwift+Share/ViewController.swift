@@ -11,6 +11,15 @@ import RxRelay
 
 final class ViewController: UIViewController {
     
+    /// 1つ目のsubscribeしている値を反映させるLabel
+    @IBOutlet private weak var subscribeTextLabel1: UILabel!
+    /// 2つ目のsubscribeしている値を反映させるLabel
+    @IBOutlet private weak var subscribeTextLabel2: UILabel!
+    /// 3つ目のsubscribeしている値を反映させるLabel
+    @IBOutlet private weak var subscribeTextLabel3: UILabel!
+    
+    @IBOutlet private weak var button: UIButton!
+    
     /// ボタンタップ時発火させる
     private let randomRelay: PublishRelay<Void> = .init()
     /// ランダムの数値を生成して流す
@@ -20,32 +29,14 @@ final class ViewController: UIViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
-        setupView()
         createObserver()
         setupSubscribe()
     }
     
-    private func setupView() {
-        let button = UIButton()
-        button.backgroundColor = .blue
-        button.addTarget(self, action: #selector(didTap(_:)), for: .touchUpInside)
-        view.addSubview(button)
-        button.translatesAutoresizingMaskIntoConstraints = false
-        button.centerYAnchor.constraint(equalTo: view.centerYAnchor).isActive = true
-        button.centerXAnchor.constraint(equalTo: view.centerXAnchor).isActive = true
-        button.widthAnchor.constraint(equalToConstant: 200).isActive = true
-        button.heightAnchor.constraint(equalToConstant: 80).isActive = true
-    }
-    
     private func createObserver() {
         randomObserver = randomRelay.map {
-            // shareオペレータをつけている場合、randomObserverを複数箇所でsubscribeしている場合でも、
-            // randomRelayが発火される度に1度だけmap内の処理が走る。
-            // そのため複数箇所のsubscribeに流れる値は同じになる。
-            // shareオペレータをつけて居ない場合は、randomRelayが発火した際にsubscribeしている数だけ、
-            // map内の処理が走るためsubscribeしている箇所それぞれ値が違くなる。
-            let random = Int.random(in: 0...10)
-            print("🐶 random: \(random)")
+            let random = Int.random(in: 0...100)
+            print("🐶 shareをつけている場合ボタンタップ毎に1度だけ呼ばれる: \(random)")
             return random
         }
         .share()
@@ -53,21 +44,30 @@ final class ViewController: UIViewController {
     
     private func setupSubscribe() {
         randomObserver
-            .subscribe(onNext: { random in
+            .subscribe(onNext: { [unowned self] random in
                 print("🐶 subscribe1: \(random)")
+                self.subscribeTextLabel1.text = "value1: \(random)"
             })
             .disposed(by: disposeBag)
         
         randomObserver
             .subscribe(onNext: { random in
                 print("🐶 subscribe2: \(random)")
+                self.subscribeTextLabel2.text = "value2: \(random)"
+            })
+            .disposed(by: disposeBag)
+        
+        randomObserver
+            .subscribe(onNext: { random in
+                print("🐶 subscribe3: \(random)")
+                self.subscribeTextLabel3.text = "value3: \(random)"
             })
             .disposed(by: disposeBag)
     }
     
     // MARK: - イベント
 
-    @objc private func didTap(_ button: UIButton) {
+    @IBAction private func didTap(_ button: UIButton) {
         randomRelay.accept(Void())
     }
 }
